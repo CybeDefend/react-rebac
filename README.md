@@ -34,9 +34,9 @@ yarn add react-rebac
 
 ### Basic Setup
 
-1. Wrap your application with the `RebacProvider` to supply the context for user relationship access.
-2. Use `setUser` to define a user's relationships with different entities.
-3. Use `AuthorizedContent` to conditionally render content based on user permissions.
+- Wrap your application with the `RebacProvider` to supply the context for user relationship access.
+- Use `setUser` to define a user's relationships with different entities.
+- Use `AuthorizedContent` to conditionally render content based on user permissions, supporting both single and multiple relationships.
 
 ### Code Example
 
@@ -61,7 +61,6 @@ const Header: React.FC = () => {
     { id: 'team2', type: 'Team', relation: 'Viewer' },
     { id: 'orgB', type: 'Organization', relation: 'Viewer' },
   ];
-  
   setUser(userEntities);
   return <h1>Welcome to our application!</h1>;
 };
@@ -69,17 +68,19 @@ const Header: React.FC = () => {
 const MainContent: React.FC = () => (
   <div>
     <h2>Conditional content based on user access</h2>
+    {/* Single relationship example */}
     <AuthorizedContent entityId="orgA" entityType="Organization" relationship="Admin">
       <h3>Organization A Admin</h3>
       <p>Content for Organization A admins.</p>
     </AuthorizedContent>
-    <AuthorizedContent entityId="team1" entityType="Team" relationship="Member">
-      <h3>Team1 Member</h3>
-      <p>Content for Team1 members.</p>
+    {/* Multiple relationship example */}
+    <AuthorizedContent entityId="team1" entityType="Team" relationship={['Member', 'Admin']}>
+      <h3>Team1 Member or Admin</h3>
+      <p>Content for Team1 members or admins.</p>
     </AuthorizedContent>
-    <AuthorizedContent entityId="team2" entityType="Team" relationship="Viewer">
-      <h3>Team2 Viewer</h3>
-      <p>Content for Team2 viewers.</p>
+    <AuthorizedContent entityId="team2" entityType="Team" relationship={['Viewer', 'Member']}>
+      <h3>Team2 Viewer or Member</h3>
+      <p>Content for Team2 viewers or members.</p>
     </AuthorizedContent>
     <AuthorizedContent entityId="orgB" entityType="Organization" relationship="Viewer">
       <h3>Organization B Viewer</h3>
@@ -110,7 +111,7 @@ A component that conditionally renders its content based on user permissions. Pr
 
 - `entityId: string`: Entity identifier.
 - `entityType: string`: Entity type (e.g., "Team", "Organization").
-- `relationship: string`: Required relationship (e.g., "Admin", "Viewer").
+- `relationship: string | string[]`: The required relationship(s). Can be a single relationship (e.g., "Admin") or an array of relationships (e.g., ["Admin", "Member"]) to support multiple access levels.
 
 ### useAuthorization
 

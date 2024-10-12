@@ -4,11 +4,14 @@ import { useAuthorization } from '../hooks/useAuthorization';
 interface AuthorizedContentProps {
   entityId: string;
   entityType: string;
-  relationship: string;
+  relationship: string | string[];
   children: ReactNode;
 }
 
 export const AuthorizedContent: React.FC<AuthorizedContentProps> = ({ entityId, entityType, relationship, children }) => {
-  const isAuthorized = useAuthorization(entityId, entityType, relationship);
-  return isAuthorized ? <>{children}</> : null;
+  const hasAccess = Array.isArray(relationship)
+    ? relationship.some((rel) => useAuthorization(entityId, entityType, rel)) // Check multiple relationships
+    : useAuthorization(entityId, entityType, relationship); // Check a single relationship
+
+  return hasAccess ? <>{children}</> : null;
 };
