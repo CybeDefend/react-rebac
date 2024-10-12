@@ -5,7 +5,6 @@
 ## Table of Contents
 
 - [Installation](#installation)
-- [Project Configuration](#project-configuration)
 - [Usage](#usage)
   - [Basic Setup](#basic-setup)
   - [Code Example](#code-example)
@@ -15,7 +14,6 @@
   - [AuthorizedContent](#authorizedcontent)
   - [useAuthorization](#useauthorization)
   - [useUserEntities](#useuserentities)
-- [Scripts](#scripts)
 - [License](#license)
 
 ## Installation
@@ -27,29 +25,9 @@ npm install react-rebac
 ```
 
 Or with Yarn:
-```
+
+```bash
 yarn add react-rebac
-```
-
-## Project Configuration
-
-If you're using TypeScript, ensure you have a configured `tsconfig.json` file to compile the library. Here's an example configuration:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
-    "jsx": "react",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "declaration": true
-  },
-  "include": ["src/**/*", "examples/**/*"]
-}
 ```
 
 ## Usage
@@ -65,9 +43,8 @@ If you're using TypeScript, ensure you have a configured `tsconfig.json` file to
 Here's an example of implementing an application using `react-rebac`.
 
 ```typescript
-// examples/App.tsx
 import React from 'react';
-import { RebacProvider, AuthorizedContent, useRebac } from '../src';
+import { RebacProvider, AuthorizedContent, useRebac } from 'react-rebac';
 
 const App: React.FC = () => (
   <RebacProvider>
@@ -78,38 +55,32 @@ const App: React.FC = () => (
 
 const Header: React.FC = () => {
   const { setUser } = useRebac();
-
   const userEntities = [
     { id: 'orgA', type: 'Organization', relation: 'Admin' },
     { id: 'team1', type: 'Team', relation: 'Member' },
     { id: 'team2', type: 'Team', relation: 'Viewer' },
     { id: 'orgB', type: 'Organization', relation: 'Viewer' },
   ];
-
+  
   setUser(userEntities);
-
   return <h1>Welcome to our application!</h1>;
 };
 
 const MainContent: React.FC = () => (
   <div>
     <h2>Conditional content based on user access</h2>
-
     <AuthorizedContent entityId="orgA" entityType="Organization" relationship="Admin">
       <h3>Organization A Admin</h3>
       <p>Content for Organization A admins.</p>
     </AuthorizedContent>
-
     <AuthorizedContent entityId="team1" entityType="Team" relationship="Member">
       <h3>Team1 Member</h3>
       <p>Content for Team1 members.</p>
     </AuthorizedContent>
-
     <AuthorizedContent entityId="team2" entityType="Team" relationship="Viewer">
       <h3>Team2 Viewer</h3>
       <p>Content for Team2 viewers.</p>
     </AuthorizedContent>
-
     <AuthorizedContent entityId="orgB" entityType="Organization" relationship="Viewer">
       <h3>Organization B Viewer</h3>
       <p>Content for Organization B viewers.</p>
@@ -130,7 +101,7 @@ Contextual component that wraps the application, making the authorization contex
 
 Hook for accessing the authorization context, returning `userEntities`, `setUser`, and `hasAccess`.
 
-- `setUser(entities: Entity[])`: Defines user relationships with different entities. An `Entity` includes `{ id, type, relation }`.
+- `setUser(entities: Entity[])`: Defines user relationships with different entities. An Entity includes `{ id, type, relation }`.
 - `hasAccess(entityId: string, entityType: string, relationship: string): boolean`: Checks if the user has a specific relationship with an entity.
 
 ### AuthorizedContent
@@ -156,11 +127,6 @@ Hook returning the list of entities associated with the user. Usage:
 ```typescript
 const userEntities = useUserEntities();
 ```
-
-## Scripts
-
-- `npm run build`: Compiles the TypeScript library to JavaScript and generates `.d.ts` files in the dist folder.
-- `npm run start`: Runs an example application `App.tsx` using `ts-node`.
 
 ## License
 
