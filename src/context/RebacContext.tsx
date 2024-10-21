@@ -7,9 +7,9 @@ export interface Entity {
 }
 
 interface RebacContextType {
-  userEntities: Entity[];
+  userEntities: Entity[] | null;
   setUser: (entities: Entity[]) => void;
-  hasAccess: (entityId: string, entityType: string, relationship: string) => boolean;
+  hasAccess: (entityId: string, entityType: string, relationship: string | string[]) => boolean | undefined;
 }
 
 const RebacContext = createContext<RebacContextType | null>(null);
@@ -27,15 +27,30 @@ interface RebacProviderProps {
 }
 
 export const RebacProvider: React.FC<RebacProviderProps> = ({ children }) => {
-  const [userEntities, setUserEntities] = useState<Entity[]>([]);
+  const [userEntities, setUserEntities] = useState<Entity[] | null>(null);
 
   const setUser = (entities: Entity[]) => {
     setUserEntities(entities);
   };
 
-  const hasAccess = (entityId: string, entityType: string, relationship: string) => {
+  const hasAccess = (
+    entityId: string,
+    entityType: string,
+    relationship: string | string[]
+  ): boolean | undefined => {
+    if (userEntities === null) {
+      // Entités non chargées
+      return undefined;
+    }
+
+    const relationships = Array.isArray(relationship) ? relationship : [relationship];
+
+    // Vérifier si l'utilisateur a l'une des relations spécifiées
     return userEntities.some(
-      (entity) => entity.id === entityId && entity.type === entityType && entity.relation === relationship
+      (entity) =>
+        entity.id === entityId &&
+        entity.type === entityType &&
+        relationships.includes(entity.relation) // Vérification multiple
     );
   };
 

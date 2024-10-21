@@ -4,14 +4,24 @@ import { useAuthorization } from '../hooks/useAuthorization';
 interface AuthorizedContentProps {
   entityId: string;
   entityType: string;
-  relationship: string | string[];
+  relationship: string | string[]; // Peut être une chaîne ou un tableau de relations
+  loading?: ReactNode; // Contenu optionnel pendant le chargement
   children: ReactNode;
 }
 
-export const AuthorizedContent: React.FC<AuthorizedContentProps> = ({ entityId, entityType, relationship, children }) => {
-  const hasAccess = Array.isArray(relationship)
-    ? relationship.some((rel) => useAuthorization(entityId, entityType, rel)) // Check multiple relationships
-    : useAuthorization(entityId, entityType, relationship); // Check a single relationship
+export const AuthorizedContent: React.FC<AuthorizedContentProps> = ({
+  entityId,
+  entityType,
+  relationship,
+  loading = null, // Contenu à afficher pendant le chargement
+  children,
+}) => {
+  const hasAccess = useAuthorization(entityId, entityType, relationship);
+
+  if (hasAccess === undefined) {
+    // Pendant le chargement des entités
+    return loading;
+  }
 
   return hasAccess ? <>{children}</> : null;
 };
