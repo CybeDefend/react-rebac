@@ -34,9 +34,13 @@ yarn add react-rebac
 
 ### Basic Setup
 
-- Wrap your application with the `RebacProvider` to supply the context for user relationship access.
-- Use `setUser` to define a user's relationships with different entities.
-- Use `AuthorizedContent` to conditionally render content based on user permissions, supporting both single and multiple relationships.
+- Wrap your application with the `RebacProvider` to supply the authorization context.
+- Use `setUser` to define the user's relationships with different entities.
+- Use `AuthorizedContent` to conditionally render content based on user permissions. It now supports two modes:
+  - **Single-entity mode**: Use `entityId`, `entityType`, and `relationship`.
+  - **Multi-entity mode**: Use an `entities` array, where each element specifies `entityId`, `entityType`, and `relationship`.
+
+**Important:** You must choose one approach at a time. If you provide both (for example, `entityId`, `entityType`, `relationship` along with `entities`), a warning will be logged and no content will be rendered.
 
 ### Code Example
 
@@ -68,23 +72,27 @@ const Header: React.FC = () => {
 const MainContent: React.FC = () => (
   <div>
     <h2>Conditional content based on user access</h2>
-    {/* Single relationship example */}
+
+    {/* Single-entity mode examples */}
     <AuthorizedContent entityId="orgA" entityType="Organization" relationship="Admin">
       <h3>Organization A Admin</h3>
-      <p>Content for Organization A admins.</p>
+      <p>Content visible to Organization A admins.</p>
     </AuthorizedContent>
-    {/* Multiple relationship example */}
+
     <AuthorizedContent entityId="team1" entityType="Team" relationship={['Member', 'Admin']}>
       <h3>Team1 Member or Admin</h3>
-      <p>Content for Team1 members or admins.</p>
+      <p>Content visible to Team1 members or admins.</p>
     </AuthorizedContent>
-    <AuthorizedContent entityId="team2" entityType="Team" relationship={['Viewer', 'Member']}>
-      <h3>Team2 Viewer or Member</h3>
-      <p>Content for Team2 viewers or members.</p>
-    </AuthorizedContent>
-    <AuthorizedContent entityId="orgB" entityType="Organization" relationship="Viewer">
-      <h3>Organization B Viewer</h3>
-      <p>Content for Organization B viewers.</p>
+
+    {/* Multi-entity mode example */}
+    <AuthorizedContent
+      entities={[
+        { entityId: 'team2', entityType: 'Team', relationship: ['Viewer', 'Member'] },
+        { entityId: 'orgB', entityType: 'Organization', relationship: 'Viewer' },
+      ]}
+    >
+      <h3>Access for Multiple Entities</h3>
+      <p>This content is visible if the user has access to at least one of the specified entities (Team2 Viewer/Member or OrgB Viewer).</p>
     </AuthorizedContent>
   </div>
 );
@@ -102,20 +110,30 @@ Contextual component that wraps the application, making the authorization contex
 
 Hook for accessing the authorization context, returning `userEntities`, `setUser`, and `hasAccess`.
 
-- `setUser(entities: Entity[])`: Defines user relationships with different entities. An Entity includes `{ id, type, relation }`.
-- `hasAccess(entityId: string, entityType: string, relationship: string): boolean`: Checks if the user has a specific relationship with an entity.
+- `setUser(entities: Entity[])`: Defines the user's relationships with various entities. An `Entity` includes `{ id, type, relation }`.
+- `hasAccess(entityId: string, entityType: string, relationship: string | string[]): boolean`: Checks if the user has a specific relationship(s) with an entity.
 
 ### AuthorizedContent
 
-A component that conditionally renders its content based on user permissions. Props include:
+A component that conditionally renders its children based on user permissions. It supports two modes:
 
-- `entityId: string`: Entity identifier.
-- `entityType: string`: Entity type (e.g., "Team", "Organization").
-- `relationship: string | string[]`: The required relationship(s). Can be a single relationship (e.g., "Admin") or an array of relationships (e.g., ["Admin", "Member"]) to support multiple access levels.
+1. **Single-entity mode**:
+   - `entityId: string`  
+   - `entityType: string`  
+   - `relationship: string | string[]`  
+
+2. **Multi-entity mode**:
+   - `entities: { entityId: string; entityType: string; relationship: string | string[]; }[]`
+
+**Note:** You must choose either single-entity mode or multi-entity mode. If both are provided, no content will be rendered and a warning will be logged.
+
+`loading?: ReactNode` can be provided to display a fallback element while the access state is being resolved.
 
 ### useAuthorization
 
-Hook returning a boolean indicating if the user has a specific relationship with a given entity. Usage:
+Hook that returns a boolean (or `undefined` during loading) indicating if the user has a specified relationship with a given entity.
+
+Usage in single-entity mode:
 
 ```typescript
 const canView = useAuthorization("orgA", "Organization", "Admin");
@@ -123,7 +141,7 @@ const canView = useAuthorization("orgA", "Organization", "Admin");
 
 ### useUserEntities
 
-Hook returning the list of entities associated with the user. Usage:
+Hook returning the list of entities associated with the user.
 
 ```typescript
 const userEntities = useUserEntities();

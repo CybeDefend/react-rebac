@@ -17,7 +17,16 @@ if git rev-parse "$VERSION" >/dev/null 2>&1; then
     exit 1
 fi
 
-# Add all changes
+# Update version in package.json using jq
+if ! command -v jq &> /dev/null; then
+    echo "jq command not found. Please install jq or update package.json manually."
+    exit 1
+fi
+
+# Update the "version" field in package.json
+jq ".version = \"${VERSION#v}\"" package.json > package.json.tmp && mv package.json.tmp package.json
+
+# Add all changes (including updated package.json)
 git add .
 
 # Commit changes
@@ -32,4 +41,4 @@ git push origin "$(git rev-parse --abbrev-ref HEAD)"
 # Push tags
 git push origin --tags
 
-echo "New version $VERSION successfully tagged and pushed!"
+echo "New version $VERSION successfully tagged, package.json updated, and pushed!"

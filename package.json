@@ -1,6 +1,6 @@
 {
   "name": "react-rebac",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Lightweight Relationship-based access management solution for React applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
